@@ -1,0 +1,22 @@
+# Environments
+.env
+.env.local
+.venv
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# IDEs
+.cursor/
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
