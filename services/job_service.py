@@ -12,7 +12,9 @@ class JobService:
 
         new_jobs: list[dict[str, str]] = []
         for job in jobs:
-            job_url = job["url"]
+            job_url = job.get("url", "").strip()
+            if not job_url:
+                continue
             if job_url not in self.seen_urls:
                 self.seen_urls.add(job_url)
                 new_jobs.append(job)

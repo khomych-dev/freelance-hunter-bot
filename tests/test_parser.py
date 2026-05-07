@@ -19,9 +19,11 @@ async def test_fetch_html_success(mocker):
     result = await parser.fetch_html("/projects")
 
     assert result == mock_html
+    mock_session_class.assert_called_once_with(impersonate="chrome120", timeout=30)
     mock_session_instance.get.assert_called_once_with(
         "https://freelancehunt.com/projects"
     )
+    mock_response.raise_for_status.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -37,6 +39,14 @@ async def test_fetch_html_http_error(mocker):
 
     with pytest.raises(Exception, match="HTTP Error"):
         await parser.fetch_html("/projects")
+
+
+@pytest.mark.asyncio
+async def test_fetch_html_empty_endpoint_raises() -> None:
+    parser = FreelancehuntParser()
+
+    with pytest.raises(ValueError, match="Endpoint cannot be empty."):
+        await parser.fetch_html("")
 
 
 def test_parse_jobs():

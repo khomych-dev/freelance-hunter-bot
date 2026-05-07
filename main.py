@@ -1,6 +1,7 @@
 import asyncio
 
 from aiogram import Bot
+from loguru import logger
 
 from config.settings import Settings
 from parser.core import FreelancehuntParser
@@ -21,19 +22,16 @@ async def main() -> None:
             job_service=job_service,
             notifier=notifier,
             interval_seconds=settings.PARSE_INTERVAL_SECONDS,
+            endpoint=settings.FREELANCEHUNT_ENDPOINT,
         )
 
         await runner.run()
+    except Exception:
+        logger.exception("Bot crashed on startup or during run loop.")
+        raise
     finally:
         await bot.session.close()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-def main():
-    print("Hello from freelance-hunter-bot!")
-
-
-if __name__ == "__main__":
-    main()

@@ -21,7 +21,12 @@ async def test_runner_run_single_iteration(mocker) -> None:
 
     mocker.patch("scheduler.runner.asyncio.sleep", side_effect=asyncio.CancelledError)
 
-    runner = BotRunner(job_service=job_service, notifier=notifier, interval_seconds=1)
+    runner = BotRunner(
+        job_service=job_service,
+        notifier=notifier,
+        interval_seconds=1,
+        endpoint="/projects",
+    )
 
     with pytest.raises(asyncio.CancelledError):
         await runner.run()
