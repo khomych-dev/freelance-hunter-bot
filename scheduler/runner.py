@@ -18,9 +18,15 @@ class BotRunner:
         self.interval_seconds = interval_seconds
 
     async def run(self) -> None:
+        logger.info(
+            f"The bot has been launched. Check interval: {self.interval_seconds} seconds."
+        )
+
         while True:
             try:
                 new_jobs = await self.job_service.get_new_jobs(endpoint="/projects")
+                logger.info(f"Check completed. Found new jobs: {len(new_jobs)}")
+
                 for job in new_jobs:
                     await self.notifier.send_job(job)
             except Exception as e:
