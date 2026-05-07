@@ -19,3 +19,24 @@ async def test_fetch_html_success(mocker):
 
     mock_get.assert_called_once_with("/jobs")
     assert result == mock_html
+
+
+def test_parse_jobs_success():
+    fake_html = """
+    <tr>
+        <td class="left">
+            <a href="/project/123.html" class="visitable">Розробка Telegram бота на Python</a>
+        </td>
+        <td class="text-green price">
+            5000 грн
+        </td>
+    </tr>
+    """
+    parser = FreelancehuntParser(base_url="https://test.com")
+
+    jobs = parser.parse_jobs(fake_html)
+
+    assert len(jobs) == 1
+    assert jobs[0]["title"] == "Розробка Telegram бота на Python"
+    assert jobs[0]["url"] == "https://test.com/project/123.html"
+    assert jobs[0]["budget"] == "5000 грн"
