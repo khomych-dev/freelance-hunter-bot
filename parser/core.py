@@ -1,7 +1,7 @@
 from typing import Dict, List
 
-import httpx
 from bs4 import BeautifulSoup
+from curl_cffi.requests import AsyncSession
 
 
 class FreelancehuntParser:
@@ -9,12 +9,10 @@ class FreelancehuntParser:
         self.base_url = base_url
 
     async def fetch_html(self, endpoint: str) -> str:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9,uk;q=0.8",
-        }
-        async with httpx.AsyncClient(base_url=self.base_url, headers=headers) as client:
-            response = await client.get(endpoint)
+        full_url = f"{self.base_url}{endpoint}"
+
+        async with AsyncSession(impersonate="chrome120") as session:
+            response = await session.get(full_url)
             response.raise_for_status()
             return response.text
 
