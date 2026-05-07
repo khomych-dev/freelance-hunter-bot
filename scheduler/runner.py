@@ -1,0 +1,29 @@
+import asyncio
+
+from loguru import logger
+
+from services.job_service import JobService
+from services.notifier import TelegramNotifier
+
+
+class BotRunner:
+    def __init__(
+        self,
+        job_service: JobService,
+        notifier: TelegramNotifier,
+        interval_seconds: int,
+    ) -> None:
+        self.job_service = job_service
+        self.notifier = notifier
+        self.interval_seconds = interval_seconds
+
+    async def run(self) -> None:
+        while True:
+            try:
+                new_jobs = await self.job_service.get_new_jobs(endpoint="/projects")
+                for job in new_jobs:
+                    await self.notifier.send_job(job)
+            except Exception as e:
+                logger.error("Runner iteration failed: {}", e)
+
+            await asyncio.sleep(self.interval_seconds)
