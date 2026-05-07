@@ -1,39 +1,43 @@
-from typing import Dict, List
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from curl_cffi.requests import AsyncSession
 
 
 class FreelancehuntParser:
-    def __init__(self, base_url: str = "https://freelancehunt.com"):
-        self.base_url = base_url
+    def __init__(self, base_url: str = "https://freelancehunt.com") -> None:
+        self.base_url = base_url.rstrip("/")
 
     async def fetch_html(self, endpoint: str) -> str:
-        full_url = f"{self.base_url}{endpoint}"
+        if not endpoint:
+            raise ValueError("Endpoint cannot be empty.")
 
-        async with AsyncSession(impersonate="chrome120") as session:
+        full_url = urljoin(f"{self.base_url}/", endpoint.lstrip("/"))
+
+        async with AsyncSession(impersonate="chrome120", timeout=30) as session:
             response = await session.get(full_url)
             response.raise_for_status()
             return response.text
 
-    def parse_jobs(self, html: str) -> List[Dict[str, str]]:
+    def parse_jobs(self, html: str) -> list[dict[str, str]]:
         soup = BeautifulSoup(html, "lxml")
-        jobs = []
+        jobs: list[dict[str, str]] = []
 
-        rows = soup.find_all("tr")
-
-        for row in rows:
+        for row in soup.find_all("tr"):
             title_elem = row.find("a", class_="visitable")
             budget_elem = row.find("td", class_="price")
 
-            if title_elem:
-                title = title_elem.text.strip()
-                url = f"{self.base_url}{title_elem['href']}"
+            if title_elem is None:
+                continue
 
-                budget = ""
-                if budget_elem:
-                    budget = budget_elem.text.strip()
+            title = title_elem.get_text(strip=True)
+            href = title_elem.get("href", "").strip()
+            if not title or not href:
+                continue
 
-                jobs.append({"title": title, "url": url, "budget": budget})
+            url = urljoin(f"{self.base_url}/", href)
+            budget = budget_elem.get_text(strip=True) if budget_elem else ""
+
+            jobs.append({"title": title, "url": url, "budget": budget})
 
         return jobs
